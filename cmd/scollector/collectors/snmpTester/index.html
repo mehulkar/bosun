@@ -9,12 +9,21 @@ var mibs = JSON.parse(localStorage.getItem("mibs"));
 var lastMib = localStorage.getItem("lastMib")
 
 angular.module('snmpApp', [])
-  .controller('SnmpController', function($scope, $http) {
+
+  .controller('SnmpController', function($scope, $http, $location) {
+	
+	var mib = $location.search().mib
+	if (mib){
+		var m = JSON.parse(atob(mib));
+		$scope.mib = m;
+	}
 	
 	if(mibs){
 		$scope.allMibs = mibs
-		if(lastMib && mibs[lastMib]){
+		if(!$scope.mib && lastMib && mibs[lastMib]){
 			$scope.mib = _.clone(mibs[lastMib])
+		}
+		if(lastMib){
 			$scope.toLoad = lastMib
 		}
 	}
@@ -93,6 +102,7 @@ angular.module('snmpApp', [])
 	}
 	$scope.new = function(){
 		$scope.mib = {Trees:[],Metrics:[]};
+		$location.search('mib', null);
 	}
 	
 	$scope.load = function(){
@@ -101,6 +111,11 @@ angular.module('snmpApp', [])
 		}else{
 			$scope.mib = _.clone($scope.allMibs[$scope.toLoad]);
 		}
+	}
+	
+	$scope.share = function(){
+		b64 = btoa(JSON.stringify($scope.mib))
+		$location.search('mib', b64);
 	}
 	
   });
@@ -161,6 +176,7 @@ Base Oid: <input type='text' ng-model="mib.BaseOid"><br/>
 <hr/>
 <button ng-click='test()'>TEST!!</button>
 <button ng-click='toml()'>TOML</button>
+<button ng-click='share()' style="float:right">share</button>
 <button ng-click='save()' style="float:right">save</button>
 <button ng-click='new()' style="float:right">new</button>
 
