@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"flag"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -11,8 +12,14 @@ import (
 	"bosun.org/cmd/scollector/conf"
 )
 
+var devMode = flag.Bool("dev", false, "Dev mode. Use html from file-system instead of embedded copy.")
+
+//go:generate esc -o=static.go -prefix=static static
+
 func main() {
-	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) { http.ServeFile(w, r, "index.html") })
+	flag.Parse()
+	fs := FS(*devMode)
+	http.Handle("/", http.FileServer(fs))
 	http.HandleFunc("/test", TestMib)
 	http.HandleFunc("/toml", Toml)
 	http.ListenAndServe(":8888", nil)
