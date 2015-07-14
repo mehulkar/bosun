@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io"
 	"math/big"
+	"reflect"
 
 	"bosun.org/_third_party/github.com/mjibson/snmp"
 	"bosun.org/cmd/scollector/conf"
@@ -182,6 +183,7 @@ func GenericSnmp(cfg conf.SNMP, mib conf.MIB) (opentsdb.MultiDataPoint, error) {
 							return md, fmt.Errorf("tree for tag %s has no entry for metric %s index %d", tag.Key, metric.Metric, i)
 						}
 					}
+					fmt.Println(tag.Key, tagVal, reflect.TypeOf(tagVal))
 					tagset[tag.Key] = fmt.Sprint(tagVal)
 				}
 				Add(&md, metric.Metric, v, tagset, rate, unit, metric.Description)
