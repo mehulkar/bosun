@@ -184,7 +184,10 @@ func GenericSnmp(cfg conf.SNMP, mib conf.MIB) (opentsdb.MultiDataPoint, error) {
 						}
 					}
 					fmt.Println(tag.Key, tagVal, reflect.TypeOf(tagVal))
-					tagset[tag.Key] = fmt.Sprintf("%v", tagVal)
+					if byteSlice, ok := tagVal.([]byte); ok {
+						tagVal = string(byteSlice)
+					}
+					tagset[tag.Key] = fmt.Sprint(tagVal)
 				}
 				Add(&md, metric.Metric, v, tagset, rate, unit, metric.Description)
 			}
