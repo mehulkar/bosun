@@ -106,6 +106,7 @@ func (s *Search) Copy() {
 	r.Tagk = s.Tagk.Copy()
 	r.Tagv = s.Tagv.Copy()
 	r.MetricTags = s.MetricTags.Copy()
+	r.Read = r
 	s.Read = r
 }
 

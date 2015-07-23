@@ -37,3 +37,27 @@ func TestUniqueMetrics(t *testing.T) {
 		t.Fatal("Duplicate metrics found")
 	}
 }
+
+func TestTagValuesByTagKey(t *testing.T) {
+	i(t, "os.cpu", "host=a")
+	i(t, "os.cpu", "host=b")
+	i(t, "os.mem", "host=a")
+	i(t, "foo", "host=car")
+	flush()
+	tagvs := testSearch.TagValuesByTagKey("host", 5*time.Second)
+	if len(tagvs) != 3 {
+		t.Fatalf("Expected 3 tag values but found %d", len(tagvs))
+	}
+}
+
+func TestTagValuesByMetricTagKey(t *testing.T) {
+	i(t, "os.cpu", "host=a")
+	i(t, "os.cpu", "host=b")
+	i(t, "os.mem", "host=a")
+	i(t, "foo", "host=car")
+	flush()
+	tagvs := testSearch.TagValuesByMetricTagKey("os.cpu", "host", 5*time.Second)
+	if len(tagvs) != 2 {
+		t.Fatalf("Expected 2 tag values but found %d", len(tagvs))
+	}
+}
