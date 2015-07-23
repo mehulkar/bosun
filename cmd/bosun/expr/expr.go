@@ -128,6 +128,7 @@ func errRecover(errp *error) {
 type Value interface {
 	Type() parse.FuncType
 	Value() interface{}
+	Copy() Value
 }
 
 func marshalFloat(n float64) ([]byte, error) {
@@ -146,12 +147,14 @@ type Number float64
 func (n Number) Type() parse.FuncType         { return parse.TypeNumberSet }
 func (n Number) Value() interface{}           { return n }
 func (n Number) MarshalJSON() ([]byte, error) { return marshalFloat(float64(n)) }
+func (n Number) Copy() Value                  { return n }
 
 type Scalar float64
 
 func (s Scalar) Type() parse.FuncType         { return parse.TypeScalar }
 func (s Scalar) Value() interface{}           { return s }
 func (s Scalar) MarshalJSON() ([]byte, error) { return marshalFloat(float64(s)) }
+func (s Scalar) Copy() Value                  { return s }
 
 // Series is the standard form within bosun to represent timeseries data.
 type Series map[time.Time]float64
@@ -165,6 +168,14 @@ func (s Series) MarshalJSON() ([]byte, error) {
 		r[fmt.Sprint(k.Unix())] = Scalar(v)
 	}
 	return json.Marshal(r)
+}
+
+func (s Series) Copy() Value {
+	s2 := make(Series, len(s))
+	for k, v := range s {
+		s2[k] = v
+	}
+	return s2
 }
 
 type SortablePoint struct {
@@ -194,6 +205,18 @@ type Result struct {
 	Computations
 	Value
 	Group opentsdb.TagSet
+}
+
+func (r *Result) Copy() *Result {
+	newR := &Result{
+		Computations: make(Computations, len(r.Computations)),
+		Value:        r.Value,
+		Group:        r.Group.Copy(),
+	}
+	for i, c := range r.Computations {
+		newR.Computations[i] = c
+	}
+	return newR
 }
 
 type Results struct {
