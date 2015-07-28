@@ -11,6 +11,7 @@ import (
 	"net/http/httptest"
 	"net/http/httputil"
 	"net/url"
+	"os"
 	"strings"
 
 	"bosun.org/cmd/tsdbrelay/denormalize"
@@ -36,6 +37,12 @@ var (
 )
 
 func main() {
+	var err error
+	myHost, err = os.Hostname()
+	if err != nil || myHost == "" {
+		myHost = "tsdbrelay"
+	}
+
 	flag.Parse()
 	if *bosunServer == "" || *tsdbServer == "" {
 		log.Fatal("must specify both bosun and tsdb server")
@@ -128,8 +135,13 @@ func (rp *relayProxy) ServeHTTP(responseWriter http.ResponseWriter, r *http.Requ
 	rp.relayRequest(responseWriter, r, true)
 }
 
+var (
+	relayHeader = "X-Relayed-From"
+	myHost      string
+)
+
 func (rp *relayProxy) relayRequest(responseWriter http.ResponseWriter, r *http.Request, parse bool) {
-	isRelayed := r.Header.Get("tsdbrelay") != ""
+	isRelayed := r.Header.Get(relayHeader) != ""
 	reader := &passthru{ReadCloser: r.Body}
 	r.Body = reader
 	w := &relayWriter{ResponseWriter: responseWriter}
@@ -169,7 +181,7 @@ func (rp *relayProxy) relayRequest(responseWriter http.ResponseWriter, r *http.R
 					verbose("%v", err)
 					return
 				}
-				req.Header.Add("tsdbrelay", "1")
+				req.Header.Add(relayHeader, myHost)
 				resp, err := http.DefaultClient.Do(req)
 				if err != nil {
 					verbose("secondary relay error: %v", err)
