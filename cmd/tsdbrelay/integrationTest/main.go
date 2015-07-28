@@ -132,8 +132,6 @@ func main() {
 	check("Tsdb DC1", "__h1.os.cpu{host=h1}", 1, dc1TsdbReceived)
 	check("Tsdb DC2", "__h1.os.cpu{host=h1}", 1, dc2TsdbReceived)
 	log.Println("test 2 ok")
-
-	time.Sleep(5 * time.Second)
 	killAll()
 }
 func check(node string, ak expr.AlertKey, expected int, data map[expr.AlertKey]int) {

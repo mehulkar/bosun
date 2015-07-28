@@ -21,7 +21,7 @@ import (
 var (
 	listenAddr      = flag.String("l", ":4242", "Listen address.")
 	bosunServer     = flag.String("b", "bosun", "Target Bosun server. Can specify port with host:port.")
-	secondaryRelays = flag.String("r", "", "Additional relays to send data to.")
+	secondaryRelays = flag.String("r", "", "Additional relays to send data to. Intended for secondary data center replication. Only response from primary tsdb server wil be relayed to clients.")
 	tsdbServer      = flag.String("t", "", "Target OpenTSDB server. Can specify port with host:port.")
 	logVerbose      = flag.Bool("v", false, "enable verbose logging")
 	toDenormalize   = flag.String("denormalize", "", "List of metrics to denormalize. Comma seperated list of `metric__tagname__tagname` rules. Will be translated to `__tagvalue.tagvalue.metric`")
