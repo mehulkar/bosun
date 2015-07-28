@@ -198,5 +198,5 @@ func encodeMdp(mdp []*opentsdb.DataPoint) io.Reader {
 func fatal(i ...interface{}) {
 	log.Println(i...)
 	killAll()
-	log.Fatal()
+	log.Fatal("")
 }
