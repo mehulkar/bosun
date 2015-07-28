@@ -129,7 +129,7 @@ func (rp *relayProxy) ServeHTTP(responseWriter http.ResponseWriter, r *http.Requ
 }
 
 func (rp *relayProxy) relayRequest(responseWriter http.ResponseWriter, r *http.Request, parse bool) {
-	isRelayed := r.FormValue("tsdbrelay") != ""
+	isRelayed := r.Header.Get("tsdbrelay") != ""
 	reader := &passthru{ReadCloser: r.Body}
 	r.Body = reader
 	w := &relayWriter{ResponseWriter: responseWriter}
@@ -156,7 +156,7 @@ func (rp *relayProxy) relayRequest(responseWriter http.ResponseWriter, r *http.R
 		verbose("bosun relay success")
 	}()
 	// Parse and denormalize datapoints
-	if parse && denormalizationRules != nil {
+	if !isRelayed && parse && denormalizationRules != nil {
 		go rp.denormalize(bytes.NewReader(reader.buf.Bytes()))
 	}
 
