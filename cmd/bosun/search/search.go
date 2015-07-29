@@ -7,6 +7,8 @@ import (
 	"strings"
 	"time"
 
+	"bosun.org/collect"
+	"bosun.org/metadata"
 	"bosun.org/opentsdb"
 )
 
@@ -110,11 +112,16 @@ func (s *Search) Copy() {
 	s.Read = r
 }
 
+func init() {
+	metadata.AddMetricMeta("bosun.search.dropped", metadata.Counter, metadata.Count, "Number of datapoints dropped by search due to full indexing queue.")
+}
+
 func (s *Search) Index(mdp opentsdb.MultiDataPoint) {
 	select {
 	case s.dps <- mdp:
 		return
 	default:
+		collect.Add("search.dropped", opentsdb.TagSet{}, len(mdp))
 		return
 	}
 }
@@ -127,7 +134,6 @@ func (s *Search) indexLoop() {
 			s.Copy()
 		case mdp := <-s.dps:
 			now := time.Now().Unix()
-
 			for _, dp := range mdp {
 				var mts MetricTagSet
 				mts.Metric = dp.Metric
